@@ -24,7 +24,8 @@ export type ShortcutActionId =
   | 'copyLastResponse'
   | 'stopGeneration'
   | 'toggleModel'
-  | 'toggleTheme';
+  | 'toggleTheme'
+  | 'toggleTemporaryChat';
 
 /**
  * Map of all shortcuts with their configurations

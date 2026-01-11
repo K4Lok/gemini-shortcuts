@@ -101,6 +101,7 @@ export default defineContentScript({
       'toggleTheme',
       'copyLastResponse',
       'toggleSidebar',
+      'toggleTemporaryChat',
     ];
 
     // Main keyboard event handler

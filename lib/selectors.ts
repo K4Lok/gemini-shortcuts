@@ -107,36 +107,46 @@ export const SELECTORS = {
 
   // Theme menu button (inside settings menu)
   themeMenuButton: [
-    // Desktop
+    // Desktop - Theme button with data-test-id (primary)
     '[data-test-id="desktop-theme-menu-button"]',
+    'button[data-test-id="desktop-theme-menu-button"]',
+    // Fallback - button with routine icon
     'button[mat-menu-item]:has(mat-icon[fonticon="routine"])',
+    '.mat-mdc-menu-item:has(mat-icon[fonticon="routine"])',
     // Mobile - theme button in settings list
     '[data-test-id="theme-menu-item"]',
-    'button:has(mat-icon[fonticon="routine"])',
   ],
 
   // Theme options in submenu/bottom sheet
   themeOptions: [
+    // Desktop submenu - mat-menu-item buttons (primary)
+    '.mat-mdc-menu-panel button.mat-mdc-menu-item',
+    '.mat-mdc-menu-panel .mat-mdc-menu-item',
     // Mobile bottom sheet theme options (with specific data-test-ids)
     '[data-test-id="mobile-theme-system"]',
     '[data-test-id="mobile-theme-light"]',
     '[data-test-id="mobile-theme-dark"]',
-    // Desktop submenu options - mat-menu-item buttons
-    '.mat-mdc-menu-panel .mat-mdc-menu-item',
-    '.mat-mdc-menu-panel button[mat-menu-item]',
-    // Generic mat menu options
-    '.mat-mdc-menu-panel [role="menuitem"]',
   ],
 
   // Settings/More menu button (to access theme)
   settingsMenuButton: [
+    // Desktop settings - side nav button with data-test-id
+    '[data-test-id="settings-and-help-button"]',
+    'side-nav-action-button[data-test-id="settings-and-help-button"]',
     // Mobile settings button
     '[data-test-id="mobile-settings-and-help-control"]',
-    // Desktop settings
+    // Fallback selectors
+    '[aria-label*="Settings" i][aria-label*="help" i]',
     'button[aria-label*="Settings" i]',
-    'button[aria-label*="More" i]',
-    'button[mattooltip*="Settings" i]',
+    'button[aria-label*="Setting" i]',
     '[data-test-id="settings-button"]',
+  ],
+
+  // Temporary chat button
+  tempChatButton: [
+    '[data-test-id="temp-chat-button"]',
+    'button[aria-label*="Temporary chat" i]',
+    'button.temp-chat-button',
   ],
 
   // Overlay backdrop (to close modals/menus)

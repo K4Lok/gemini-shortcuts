@@ -28,6 +28,8 @@ export function executeAction(actionId: ShortcutActionId): ActionResult {
       return handleToggleModel();
     case 'toggleTheme':
       return handleToggleTheme();
+    case 'toggleTemporaryChat':
+      return handleToggleTemporaryChat();
     default:
       return { success: false, message: `Unknown action: ${actionId}` };
   }
@@ -171,15 +173,75 @@ function selectNextModel(): void {
   }
 }
 
+function handleToggleTemporaryChat(): ActionResult {
+  // First, blur any active element to ensure the button can be clicked
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+
+  const tempChatButton = queryElement(SELECTORS.tempChatButton);
+  
+  if (tempChatButton instanceof HTMLElement) {
+    // Button is visible, click it directly
+    clickTempChatButton(tempChatButton, false);
+    return { success: true };
+  }
+  
+  // Button not visible - sidebar might be closed, try opening it first
+  const sidebarToggle = queryElement(SELECTORS.sidebarToggle);
+  if (sidebarToggle instanceof HTMLElement) {
+    sidebarToggle.click();
+    
+    // Wait for sidebar to open and temp chat button to appear
+    waitForElement(SELECTORS.tempChatButton, 500).then((btn) => {
+      if (btn instanceof HTMLElement) {
+        // Pass true to indicate we need to close sidebar after
+        clickTempChatButton(btn, true);
+      }
+    });
+    
+    return { success: true };
+  }
+  
+  return { success: false, message: 'Temporary chat button not found' };
+}
+
+function clickTempChatButton(button: HTMLElement, closeSidebarAfter: boolean): void {
+  button.click();
+  
+  // After clicking, close sidebar if we opened it
+  if (closeSidebarAfter) {
+    setTimeout(() => {
+      const sidebarToggle = queryElement(SELECTORS.sidebarToggle);
+      if (sidebarToggle instanceof HTMLElement) {
+        sidebarToggle.click();
+      }
+    }, 100);
+  }
+  
+  // Prevent Gemini from focusing the input after toggle
+  // by re-blurring after a short delay
+  setTimeout(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      const isPromptInput = document.activeElement.matches(
+        '[contenteditable="true"], textarea, input[type="text"]'
+      );
+      if (isPromptInput) {
+        document.activeElement.blur();
+      }
+    }
+  }, 150);
+}
+
 function handleToggleTheme(): ActionResult {
   // First, blur any active element
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur();
   }
 
-  // Check if theme options are already visible (theme submenu/bottom sheet is open)
+  // Check if theme submenu is already visible (has System/Light/Dark options)
   const existingThemeOptions = getThemeOptions();
-  if (existingThemeOptions.length > 0) {
+  if (existingThemeOptions.length >= 3) {
     selectNextTheme();
     return { success: true };
   }
@@ -189,13 +251,10 @@ function handleToggleTheme(): ActionResult {
   if (themeButton instanceof HTMLElement) {
     themeButton.click();
     
-    // Wait for theme options to appear and select next
-    waitForElement(SELECTORS.themeOptions, 1000).then(() => {
-      // Give extra time for all options to render
-      setTimeout(() => {
-        selectNextTheme();
-      }, 150);
-    });
+    // Wait for theme submenu to appear
+    setTimeout(() => {
+      selectNextTheme();
+    }, 150);
     
     return { success: true };
   }
@@ -206,22 +265,19 @@ function handleToggleTheme(): ActionResult {
     settingsButton.click();
     
     // Wait for settings menu to open, then click theme button
-    waitForElement(SELECTORS.themeMenuButton, 1000).then((themeBtn) => {
+    setTimeout(() => {
+      const themeBtn = queryElement(SELECTORS.themeMenuButton);
       if (themeBtn instanceof HTMLElement) {
-        // Small delay before clicking theme button
+        themeBtn.click();
+        
+        // Wait for theme submenu to appear
         setTimeout(() => {
-          themeBtn.click();
-          
-          // Wait for theme options to appear
-          waitForElement(SELECTORS.themeOptions, 1000).then(() => {
-            // Give extra time for all options to render
-            setTimeout(() => {
-              selectNextTheme();
-            }, 150);
-          });
-        }, 100);
+          selectNextTheme();
+        }, 150);
+      } else {
+        console.warn('[Gemini Shortcuts] Theme button not found in settings menu');
       }
-    });
+    }, 150);
     
     return { success: true };
   }
@@ -231,15 +287,35 @@ function handleToggleTheme(): ActionResult {
 
 /**
  * Get theme options, filtering to only System/Light/Dark
+ * Looks for menu items in the theme submenu (not the main settings menu)
  */
 function getThemeOptions(): Element[] {
-  const allOptions = queryAllElements(SELECTORS.themeOptions);
+  // Get all mat-mdc-menu-panel elements (the actual menu containers)
+  const menuPanels = document.querySelectorAll('.mat-mdc-menu-panel');
   
-  // Filter to only theme-related options by checking text content
-  return allOptions.filter((option) => {
-    const text = option.textContent?.toLowerCase() || '';
-    return text.includes('system') || text.includes('light') || text.includes('dark');
-  });
+  // Find the theme submenu by looking for a panel with exactly 3 items: System, Light, Dark
+  for (const panel of menuPanels) {
+    const menuItems = panel.querySelectorAll('.mat-mdc-menu-item, [role="menuitem"]');
+    const themeOptions: Element[] = [];
+    
+    for (const item of menuItems) {
+      // Get the text from the gds-label-l span or direct text content
+      const labelSpan = item.querySelector('.gds-label-l');
+      const text = (labelSpan?.textContent || item.textContent || '').toLowerCase().trim();
+      
+      // Match theme options
+      if (text === 'system' || text === 'light' || text === 'dark') {
+        themeOptions.push(item);
+      }
+    }
+    
+    // Theme submenu should have exactly 3 options
+    if (themeOptions.length === 3) {
+      return themeOptions;
+    }
+  }
+  
+  return [];
 }
 
 /**
@@ -269,33 +345,24 @@ function selectNextTheme(): void {
     return;
   }
 
-  console.log('[Gemini Shortcuts] Found theme options:', options.length);
-
-  // Find the currently selected theme by checking for check icon
+  // Find the currently selected theme by checking for check_circle icon
   let currentIndex = -1;
   options.forEach((option, index) => {
-    // Check for check_circle icon (both mobile and desktop)
+    // Check for check_circle icon inside the menu item
     const hasCheckIcon = option.querySelector('mat-icon[fonticon="check_circle"]');
-    const ariaChecked = option.getAttribute('aria-checked') === 'true';
-    const isSelected = option.classList.contains('is-selected');
-    
-    if (hasCheckIcon || ariaChecked || isSelected) {
+    if (hasCheckIcon) {
       currentIndex = index;
     }
   });
 
-  console.log('[Gemini Shortcuts] Current theme index:', currentIndex);
-
-  // Select the next theme (cycle through)
+  // Select the next theme (cycle through: System -> Light -> Dark -> System)
   const nextIndex = (currentIndex + 1) % options.length;
   const nextOption = options[nextIndex];
-
-  console.log('[Gemini Shortcuts] Selecting theme index:', nextIndex);
 
   if (nextOption instanceof HTMLElement) {
     nextOption.click();
     
-    // Close the overlay/modal after a short delay
+    // Close the settings menu after selecting theme
     setTimeout(() => {
       closeOverlay();
     }, 100);

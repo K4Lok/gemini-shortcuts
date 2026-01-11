@@ -54,6 +54,13 @@ export const DEFAULT_SHORTCUTS: ShortcutsMap = {
     altKey: false,
     enabled: true,
   },
+  toggleTemporaryChat: {
+    key: 'p',
+    metaKey: true,
+    shiftKey: true,
+    altKey: false,
+    enabled: true,
+  },
 };
 
 /**
@@ -95,6 +102,11 @@ export const SHORTCUT_ACTIONS: ShortcutActionMeta[] = [
     id: 'toggleTheme',
     label: 'Toggle Theme',
     description: 'Cycle through System / Light / Dark themes',
+  },
+  {
+    id: 'toggleTemporaryChat',
+    label: 'Toggle Temporary Chat',
+    description: 'Toggle temporary chat mode (chats not saved to history)',
   },
 ];
 
