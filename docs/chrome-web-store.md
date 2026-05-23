@@ -26,10 +26,13 @@ Google Gemini is an amazing AI assistant, but it lacks native keyboard shortcuts
 Press ⌘/ (Mac) or Ctrl+/ (Windows) anytime to see all available shortcuts in a beautiful overlay.
 
 🔄 QUICK MODEL SWITCHING
-Toggle between Fast, Thinking, and Pro modes with a single keystroke (⌘⇧M). No more clicking through menus!
+Cycle through the available Gemini models with a single keystroke (⌘⇧M). No more clicking through menus!
 
 🌓 THEME TOGGLE
-Switch between System, Light, and Dark themes instantly (⌘⇧T).
+Switch between System, Light, and Dark themes instantly (⌘⇧L).
+
+🕶️ TEMPORARY CHAT
+Toggle Gemini's temporary chat mode for one-off conversations (⌘⇧P).
 
 📋 COPY RESPONSES
 Copy the AI's latest response to your clipboard with one shortcut (⌘⇧C).
@@ -55,7 +58,8 @@ EXTENSION SHORTCUTS:
 • Toggle Model: ⌘⇧M (Ctrl+Shift+M)
 • Stop Generation: Esc
 • Copy Last Response: ⌘⇧C (Ctrl+Shift+C)
-• Toggle Theme: ⌘⇧T (Ctrl+Shift+T)
+• Toggle Theme: ⌘⇧L (Ctrl+Shift+L)
+• Toggle Temporary Chat: ⌘⇧P (Ctrl+Shift+P)
 
 ═══════════════════════════════════
 🛡️ PRIVACY & PERMISSIONS

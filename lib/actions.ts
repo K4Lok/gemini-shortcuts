@@ -151,15 +151,14 @@ function selectNextModel(): void {
     return;
   }
 
-  // Find the currently selected model by checking for the check icon or is-selected class
+  // Find the currently selected model. The new <gem-menu-item> uses class "selected";
+  // the legacy <button> used "is-selected" / aria-checked / a check_circle icon.
   let currentIndex = -1;
   options.forEach((option, index) => {
-    // Check various indicators of selection
-    const hasCheckIcon = option.querySelector('mat-icon[fonticon="check_circle"]');
-    const isSelected = option.classList.contains('is-selected');
+    const isSelected = option.classList.contains('selected') || option.classList.contains('is-selected');
     const ariaChecked = option.getAttribute('aria-checked') === 'true';
-    
-    if (hasCheckIcon || isSelected || ariaChecked) {
+    const hasCheckIcon = option.querySelector('mat-icon[fonticon="check_circle"]');
+    if (isSelected || ariaChecked || hasCheckIcon) {
       currentIndex = index;
     }
   });
@@ -345,12 +344,13 @@ function selectNextTheme(): void {
     return;
   }
 
-  // Find the currently selected theme by checking for check_circle icon
+  // Find the currently selected theme. New UI marks it with aria-checked="true"
+  // and a <mat-icon fonticon="check">; legacy used "check_circle".
   let currentIndex = -1;
   options.forEach((option, index) => {
-    // Check for check_circle icon inside the menu item
-    const hasCheckIcon = option.querySelector('mat-icon[fonticon="check_circle"]');
-    if (hasCheckIcon) {
+    const ariaChecked = option.getAttribute('aria-checked') === 'true';
+    const hasCheckIcon = option.querySelector('mat-icon[fonticon="check"], mat-icon[fonticon="check_circle"]');
+    if (ariaChecked || hasCheckIcon) {
       currentIndex = index;
     }
   });

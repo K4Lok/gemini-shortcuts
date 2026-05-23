@@ -14,10 +14,17 @@ export const SELECTORS = {
     '[class*="new-chat"]',
   ],
 
-  // Main menu / Sidebar toggle (hamburger menu)
+  // Main menu / Sidebar toggle (hamburger / sparkle)
+  // Signed-in: "Close sidebar" button appears when open, "Open sidebar" when collapsed
+  // (only one is visible at a time — order matters so we pick whichever is rendered).
   sidebarToggle: [
+    // Open state - "Close sidebar" button is visible
+    'button[aria-label*="Close sidebar" i]',
+    // Collapsed state - "Open sidebar" button visible (also has side-nav-sparkle-button test-id)
+    'button[aria-label*="Open sidebar" i]',
+    // Legacy hamburger (unauth landing)
+    'button[data-test-id="side-nav-menu-button"]',
     'button[aria-label*="Main menu" i]',
-    'button[aria-label*="menu" i][aria-label*="main" i]',
     'button[aria-label*="Toggle" i][aria-label*="sidebar" i]',
     'button[aria-label*="Navigation" i]',
   ],
@@ -51,16 +58,16 @@ export const SELECTORS = {
     '.input-area [contenteditable="true"]',
   ],
 
-  // Copy button for responses - using the actual selectors from Gemini
+  // Copy button for responses - target the inner <button>, not the <gem-icon-button> wrapper
   copyButton: [
-    '[data-test-id="copy-button"]',
+    '[data-test-id="copy-button"] button',
+    'copy-button button',
     'button[aria-label="Copy"]',
     'button[mattooltip="Copy response"]',
-    'copy-button button',
     'button:has(mat-icon[fonticon="content_copy"])',
   ],
 
-  // Stop generation button
+  // Stop generation button (aria-label is "Stop response" in the current UI)
   stopButton: [
     'button[aria-label*="Stop" i]',
     'button[aria-label*="Cancel" i]',
@@ -69,13 +76,13 @@ export const SELECTORS = {
 
   // Response containers (for copying last response)
   responseContainer: [
-    // Main response content
-    'message-content.model-response-text',
+    // New custom element wrapping each model response
+    'model-response',
+    // Class moved from <message-content> to <structured-content-container> — match by class
     '.model-response-text',
-    '[data-message-author-role="assistant"]',
-    // Response text blocks
-    '.response-container-content',
     '.markdown-main-panel',
+    '[data-message-author-role="assistant"]',
+    '.response-container-content',
   ],
 
   // Model switcher button (opens the mode selection menu)
@@ -91,15 +98,16 @@ export const SELECTORS = {
   ],
 
   // Model options in the menu (after menu is opened)
-  // Supports both desktop dropdown menu and mobile bottom sheet
+  // New UI uses <gem-menu-item role="menuitem"> with hashed test-ids; legacy used <button>.
   modelOptions: [
-    // Desktop menu options
-    'button[data-test-id^="bard-mode-option"]',
+    // Current desktop menu options (any tag, hashed test-id)
+    '[data-test-id^="bard-mode-option"]',
+    // Legacy fallbacks
     '.bard-mode-list-button',
     '.gds-mode-switch-menu [role="menuitemradio"]',
     '.mat-mdc-menu-panel [role="menuitemradio"]',
     // Mobile bottom sheet options
-    '[data-test-id="mobile-nested-mode-menu"] button[data-test-id^="bard-mode-option"]',
+    '[data-test-id="mobile-nested-mode-menu"] [data-test-id^="bard-mode-option"]',
     '.bard-mode-bottom-sheet .bard-mode-list-button',
     'mat-bottom-sheet-container .bard-mode-list-button',
     '.mat-bottom-sheet-container [role="menuitem"]',
@@ -129,10 +137,14 @@ export const SELECTORS = {
   ],
 
   // Settings/More menu button (to access theme)
+  // Signed-in: new "mavatar-footer-settings-button" (real <button>, in avatar footer).
+  // Unauth landing: legacy "settings-and-help-button" (a <side-nav-action-button>
+  // wrapper — must target the inner <button>).
   settingsMenuButton: [
-    // Desktop settings - side nav button with data-test-id
-    '[data-test-id="settings-and-help-button"]',
-    'side-nav-action-button[data-test-id="settings-and-help-button"]',
+    // Signed-in (current UI)
+    'button[data-test-id="mavatar-footer-settings-button"]',
+    // Legacy unauth landing — target inner <button> not the wrapper
+    '[data-test-id="settings-and-help-button"] button',
     // Mobile settings button
     '[data-test-id="mobile-settings-and-help-control"]',
     // Fallback selectors
@@ -142,14 +154,14 @@ export const SELECTORS = {
     '[data-test-id="settings-button"]',
   ],
 
-  // Temporary chat button
+  // Temporary chat button - target inner <button>, not the <gem-icon-button> wrapper
   tempChatButton: [
-    '[data-test-id="temp-chat-button"]',
+    '[data-test-id="temp-chat-button"] button',
     'button[aria-label*="Temporary chat" i]',
     'button.temp-chat-button',
   ],
 
-  // Overlay backdrop (to close modals/menus)
+  // Overlay backdrop (to close modals/menus) — dark backdrop variant was removed
   overlayBackdrop: [
     '.cdk-overlay-backdrop',
     '.cdk-overlay-dark-backdrop',
@@ -157,22 +169,32 @@ export const SELECTORS = {
 } as const;
 
 /**
- * Query for an element using multiple selector strategies
- * Returns the first matching element or null
+ * Check if an element is rendered (has non-zero size). Gemini often keeps both
+ * "open" and "close" sidebar buttons in the DOM but only renders one at a time.
+ */
+function isVisible(el: Element): boolean {
+  if (!(el instanceof HTMLElement)) return true;
+  return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+}
+
+/**
+ * Query for an element using multiple selector strategies.
+ * Prefers a visible match across all selectors; falls back to first match if none are visible.
  */
 export function queryElement(selectorList: readonly string[]): Element | null {
+  let firstMatch: Element | null = null;
   for (const selector of selectorList) {
     try {
-      const element = document.querySelector(selector);
-      if (element) {
-        return element;
+      const elements = document.querySelectorAll(selector);
+      for (const el of elements) {
+        if (!firstMatch) firstMatch = el;
+        if (isVisible(el)) return el;
       }
     } catch (e) {
-      // Invalid selector, try next
       continue;
     }
   }
-  return null;
+  return firstMatch;
 }
 
 /**

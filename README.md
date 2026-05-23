@@ -9,8 +9,9 @@ A browser extension that adds keyboard shortcuts to Google Gemini, making your A
 ## Features
 
 - **Custom Keyboard Shortcuts** - Navigate Gemini with customizable key combinations
-- **Toggle AI Models** - Quickly switch between Fast, Thinking, and Pro modes
+- **Toggle AI Models** - Quickly cycle through the available Gemini models
 - **Theme Switching** - Cycle through System, Light, and Dark themes
+- **Temporary Chat** - Toggle Gemini's temporary chat mode with a hotkey
 - **Help Overlay** - Press `⌘/` to see all available shortcuts at a glance
 - **Cross-Browser Support** - Works on Chrome, Firefox, and Edge
 - **Sync Across Devices** - Your shortcut preferences sync via browser storage
@@ -32,7 +33,8 @@ A browser extension that adds keyboard shortcuts to Google Gemini, making your A
 | Toggle Model | `⌘⇧M` | `Ctrl+Shift+M` |
 | Stop Generation | `Esc` | `Esc` |
 | Copy Last Response | `⌘⇧C` | `Ctrl+Shift+C` |
-| Toggle Theme | `⌘⇧T` | `Ctrl+Shift+T` |
+| Toggle Theme | `⌘⇧L` | `Ctrl+Shift+L` |
+| Toggle Temporary Chat | `⌘⇧P` | `Ctrl+Shift+P` |
 
 ## Installation
 
