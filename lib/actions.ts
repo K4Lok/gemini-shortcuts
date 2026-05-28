@@ -26,6 +26,12 @@ export function executeAction(actionId: ShortcutActionId): ActionResult {
       return handleStopGeneration();
     case 'toggleModel':
       return handleToggleModel();
+    case 'selectModel1':
+      return handleSelectModelAt(0);
+    case 'selectModel2':
+      return handleSelectModelAt(1);
+    case 'selectModel3':
+      return handleSelectModelAt(2);
     case 'toggleTheme':
       return handleToggleTheme();
     case 'toggleTemporaryChat':
@@ -142,6 +148,52 @@ function handleToggleModel(): ActionResult {
   }
 
   return { success: true };
+}
+
+function handleSelectModelAt(index: number): ActionResult {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+
+  const switcherButton = queryElement(SELECTORS.modelSwitcher);
+  if (!(switcherButton instanceof HTMLElement)) {
+    return { success: false, message: 'Model switcher not found' };
+  }
+
+  const existingOptions = queryAllElements(SELECTORS.modelOptions);
+
+  if (existingOptions.length === 0) {
+    switcherButton.click();
+    waitForElement(SELECTORS.modelOptions, 500).then((option) => {
+      if (!option) {
+        console.warn('[Gemini Shortcuts] Model options not found after opening menu');
+        return;
+      }
+      setTimeout(() => clickModelAt(index), 100);
+    });
+  } else {
+    clickModelAt(index);
+  }
+
+  return { success: true };
+}
+
+function clickModelAt(index: number): void {
+  const options = queryAllElements(SELECTORS.modelOptions);
+  if (options.length === 0) {
+    console.warn('[Gemini Shortcuts] No model options found');
+    return;
+  }
+  if (index >= options.length) {
+    console.warn(`[Gemini Shortcuts] Model index ${index} out of range (have ${options.length})`);
+    // Close the menu since we can't fulfill the request
+    closeOverlay();
+    return;
+  }
+  const target = options[index];
+  if (target instanceof HTMLElement) {
+    target.click();
+  }
 }
 
 function selectNextModel(): void {

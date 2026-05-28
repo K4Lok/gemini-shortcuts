@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useShortcutsStore } from '@/stores/shortcuts';
 import { SHORTCUT_ACTIONS, formatShortcut } from '@/lib/defaults';
+import { normalizeKeyFromEvent } from '@/lib/key-codes';
 import { ShortcutRow } from '@/components/ShortcutRow';
 import { ShortcutRecorder } from '@/components/ShortcutRecorder';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,13 +35,11 @@ function App() {
       event.preventDefault();
       event.stopPropagation();
 
-      // Skip modifier-only keys
-      if (['Control', 'Shift', 'Alt', 'Meta'].includes(event.key)) {
-        return;
-      }
+      const key = normalizeKeyFromEvent(event);
+      if (!key) return; // modifier-only press
 
       // Escape cancels recording
-      if (event.key === 'Escape' && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+      if (key === 'Escape' && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
         stopRecording();
         return;
       }
@@ -49,7 +48,7 @@ function App() {
       const metaKey = isMac ? event.metaKey : event.ctrlKey;
 
       recordShortcut({
-        key: event.key,
+        key,
         metaKey,
         shiftKey: event.shiftKey,
         altKey: event.altKey,
