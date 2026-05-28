@@ -24,6 +24,9 @@ export type ShortcutActionId =
   | 'copyLastResponse'
   | 'stopGeneration'
   | 'toggleModel'
+  | 'selectModel1'
+  | 'selectModel2'
+  | 'selectModel3'
   | 'toggleTheme'
   | 'toggleTemporaryChat';
 

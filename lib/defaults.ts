@@ -47,6 +47,27 @@ export const DEFAULT_SHORTCUTS: ShortcutsMap = {
     altKey: false,
     enabled: true,
   },
+  selectModel1: {
+    key: '',
+    metaKey: false,
+    shiftKey: false,
+    altKey: false,
+    enabled: false,
+  },
+  selectModel2: {
+    key: '',
+    metaKey: false,
+    shiftKey: false,
+    altKey: false,
+    enabled: false,
+  },
+  selectModel3: {
+    key: '',
+    metaKey: false,
+    shiftKey: false,
+    altKey: false,
+    enabled: false,
+  },
   toggleTheme: {
     key: 'l',
     metaKey: true,
@@ -86,7 +107,22 @@ export const SHORTCUT_ACTIONS: ShortcutActionMeta[] = [
   {
     id: 'toggleModel',
     label: 'Toggle Model',
-    description: 'Cycle through Fast / Thinking / Pro modes',
+    description: 'Cycle through available model options',
+  },
+  {
+    id: 'selectModel1',
+    label: 'Select Model 1',
+    description: 'Pick the 1st model in the menu (position-based, survives renames)',
+  },
+  {
+    id: 'selectModel2',
+    label: 'Select Model 2',
+    description: 'Pick the 2nd model in the menu (position-based, survives renames)',
+  },
+  {
+    id: 'selectModel3',
+    label: 'Select Model 3',
+    description: 'Pick the 3rd model in the menu (position-based, survives renames)',
   },
   {
     id: 'stopGeneration',
