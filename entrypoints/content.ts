@@ -3,6 +3,7 @@ import { loadShortcuts, isExtensionEnabled, onStorageChange } from '@/lib/storag
 import { executeAction } from '@/lib/actions';
 import { SELECTORS, queryElement } from '@/lib/selectors';
 import { toggleHelpOverlay, isHelpOverlayVisible } from '@/lib/help-overlay';
+import { normalizeKeyFromEvent } from '@/lib/key-codes';
 
 export default defineContentScript({
   matches: ['*://gemini.google.com/*'],
@@ -50,11 +51,13 @@ export default defineContentScript({
 
     // Check if a keyboard event matches a shortcut config
     function matchesShortcut(event: KeyboardEvent, config: ShortcutConfig): boolean {
-      // Normalize key comparison (case insensitive for single characters)
-      const eventKey = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+      // Use the physical-key normalization so Option-layered keys on macOS
+      // (⌥1 = "¡", ⌥2 = "™", …) still match their stored "1", "2", … chords.
+      const eventKey = normalizeKeyFromEvent(event);
+      if (!eventKey) return false;
+
       const configKey = config.key.length === 1 ? config.key.toLowerCase() : config.key;
 
-      // Check key match
       if (eventKey !== configKey) {
         return false;
       }
